@@ -1,0 +1,87 @@
+# scripts/analyzers/news_analyzer.py
+import pandas as pd
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+from collections import Counter
+import numpy as np
+
+class NewsAnalyzer:
+    def __init__(self, data_file):
+        self.df = pd.read_csv(data_file)
+    
+    def temporal_analysis(self):
+        # Análise temporal das publicações
+        self.df['date'] = pd.to_datetime(self.df['date'])
+        self.df['month'] = self.df['date'].dt.to_period('M')
+        
+        monthly_counts = self.df['month'].value_counts().sort_index()
+        
+        plt.figure(figsize=(12, 6))
+        monthly_counts.plot(kind='bar')
+        plt.title('Publicações por Mês')
+        plt.xlabel('Mês')
+        plt.ylabel('Número de Artigos')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig('data/output/monthly_publications.png')
+        plt.close()
+        
+        return monthly_counts
+    
+    def category_analysis(self):
+        # Análise por categoria
+        if 'category' not in self.df.columns:
+            raise ValueError("Dados não categorizados. Execute a limpeza primeiro.")
+        
+        category_counts = self.df['category'].value_counts()
+        
+        plt.figure(figsize=(10, 10))
+        plt.pie(category_counts, labels=category_counts.index, autopct='%1.1f%%')
+        plt.title('Distribuição por Categoria')
+        plt.savefig('data/output/category_distribution.png')
+        plt.close()
+        
+        return category_counts
+    
+    def generate_wordcloud(self, text_column='content'):
+        # Gera nuvem de palavras
+        all_text = ' '.join(self.df[text_column].dropna())
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_text)
+        
+        plt.figure(figsize=(15, 8))
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis('off')
+        plt.savefig('data/output/wordcloud.png')
+        plt.close()
+    
+    def top_authors(self):
+        # Autores mais produtivos
+        if 'author' not in self.df.columns:
+            return None
+            
+        author_counts = self.df['author'].value_counts().head(10)
+        
+        plt.figure(figsize=(12, 6))
+        author_counts.plot(kind='barh')
+        plt.title('Top 10 Autores por Publicações')
+        plt.xlabel('Número de Artigos')
+        plt.ylabel('Autor')
+        plt.tight_layout()
+        plt.savefig('data/output/top_authors.png')
+        plt.close()
+        
+        return author_counts
+    
+    def full_analysis(self):
+        results = {
+            'temporal': self.temporal_analysis(),
+            'categories': self.category_analysis(),
+            'authors': self.top_authors()
+        }
+        self.generate_wordcloud()
+        return results
+
+# Exemplo de uso
+if __name__ == "__main__":
+    analyzer = NewsAnalyzer("data/processed/cleaned_data.csv")
+    analysis_results = analyzer.full_analysis()
