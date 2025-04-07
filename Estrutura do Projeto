@@ -1,0 +1,18 @@
+/projeto-jornalismo-dados
+│── /data
+│   ├── /raw          # Dados brutos coletados
+│   ├── /processed    # Dados limpos e processados
+│   └── /output       # Dados finais para visualização
+│── /notebooks        # Jupyter notebooks para análise exploratória
+│── /scripts
+│   ├── collectors    # Scripts de coleta de dados
+│   ├── cleaners      # Scripts de limpeza de dados
+│   ├── analyzers     # Scripts de análise
+│   └── utils         # Funções auxiliares
+│── /web              # Arquivos para visualização front-end
+│   ├── /css
+│   ├── /js
+│   └── /templates
+│── /docs             # Documentação e protótipos de design
+│── requirements.txt  # Dependências do Python
+│── README.md         # Documentação do projeto
