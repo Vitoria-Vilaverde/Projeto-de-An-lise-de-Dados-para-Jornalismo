@@ -1,0 +1,31 @@
+# scripts/analyzers/geospatial.py
+import geopandas as gpd
+import folium
+from shapely.geometry import Point
+
+class GeoSpatialAnalyzer:
+    def __init__(self, data_file, geo_column='location'):
+        self.gdf = gpd.read_file(data_file)
+        if geo_column not in self.gdf.columns:
+            raise ValueError(f"Coluna geoespacial '{geo_column}' não encontrada")
+        
+    def create_interactive_map(self, output_file='data/output/interactive_map.html'):
+        # Cria um mapa centrado no Brasil
+        m = folium.Map(location=[-15, -55], zoom_start=4)
+        
+        # Adiciona marcadores para cada localização
+        for idx, row in self.gdf.iterrows():
+            if not pd.isna(row['geometry']):
+                folium.Marker(
+                    location=[row['geometry'].y, row['geometry'].x],
+                    popup=row.get('name', 'Sem nome'),
+                    icon=folium.Icon(color='red')
+                ).add_to(m)
+        
+        # Adiciona camada de calor se houver muitos pontos
+        if len(self.gdf) > 50:
+            heat_data = [[point.y, point.x] for point in self.gdf['geometry'] if point]
+            folium.plugins.HeatMap(heat_data).add_to(m)
+        
+        m.save(output_file)
+        return m
