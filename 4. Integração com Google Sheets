@@ -1,0 +1,50 @@
+# scripts/utils/gsheets_integration.py
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import pandas as pd
+
+class GSheetsIntegration:
+    def __init__(self, creds_file, spreadsheet_key):
+        scope = ['https://spreadsheets.google.com/feeds',
+                 'https://www.googleapis.com/auth/drive']
+        
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(creds_file, scope)
+        self.gc = gspread.authorize(credentials)
+        self.spreadsheet = self.gc.open_by_key(spreadsheet_key)
+    
+    def export_to_sheet(self, df, worksheet_name, clear_existing=True):
+        try:
+            worksheet = self.spreadsheet.worksheet(worksheet_name)
+        except:
+            worksheet = self.spreadsheet.add_worksheet(title=worksheet_name, rows=100, cols=20)
+        
+        if clear_existing:
+            worksheet.clear()
+        
+        # Exporta cabeçalhos
+        headers = df.columns.tolist()
+        worksheet.append_row(headers)
+        
+        # Exporta dados
+        data = df.fillna('').values.tolist()
+        worksheet.append_rows(data)
+        
+        print(f"Dados exportados para a planilha {worksheet_name}")
+    
+    def import_from_sheet(self, worksheet_name):
+        worksheet = self.spreadsheet.worksheet(worksheet_name)
+        records = worksheet.get_all_records()
+        return pd.DataFrame(records)
+
+# Exemplo de uso
+if __name__ == "__main__":
+    # Substitua com suas credenciais
+    gsheet = GSheetsIntegration('credentials.json', 'SPREADSHEET_KEY')
+    
+    # Exemplo de exportação
+    df = pd.read_csv('data/processed/cleaned_data.csv')
+    gsheet.export_to_sheet(df, 'Notícias Analisadas')
+    
+    # Exemplo de importação
+    imported_data = gsheet.import_from_sheet('Notícias Analisadas')
+    print(imported_data.head())
