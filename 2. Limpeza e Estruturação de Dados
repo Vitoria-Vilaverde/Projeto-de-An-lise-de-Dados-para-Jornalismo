@@ -1,0 +1,61 @@
+# scripts/cleaners/data_cleaner.py
+import pandas as pd
+import re
+from datetime import datetime
+
+class DataCleaner:
+    def __init__(self, input_file, output_file="data/processed/cleaned_data.csv"):
+        self.input_file = input_file
+        self.output_file = output_file
+    
+    def clean_data(self):
+        df = pd.read_csv(self.input_file)
+        
+        # Limpeza de texto
+        df['title'] = df['title'].apply(self.clean_text)
+        df['content'] = df['content'].apply(self.clean_text)
+        
+        # Padronização de datas
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        df = df.dropna(subset=['date'])
+        
+        # Extração de entidades (exemplo: menções a políticos)
+        df['mentioned_politicians'] = df['content'].apply(self.extract_politicians)
+        
+        # Classificação por tema (exemplo simplificado)
+        df['category'] = df['content'].apply(self.categorize_content)
+        
+        df.to_csv(self.output_file, index=False)
+        print(f"Dados limpos salvos em {self.output_file}")
+        return df
+    
+    def clean_text(self, text):
+        if not isinstance(text, str):
+            return ""
+        # Remove caracteres especiais, múltiplos espaços, etc.
+        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r'[^\w\s]', '', text)
+        return text.strip().lower()
+    
+    def extract_politicians(self, text):
+        # Lista fictícia de políticos para exemplo
+        politicians = ['lula', 'bolsonaro', 'ciro gomes', 'marina silva']
+        mentioned = [p for p in politicians if p in text.lower()]
+        return ', '.join(mentioned) if mentioned else None
+    
+    def categorize_content(self, text):
+        keywords = {
+            'política': ['presidente', 'governo', 'senador', 'deputado'],
+            'economia': ['dólar', 'inflação', 'ibovespa', 'pib'],
+            'saúde': ['vacina', 'covid', 'hospital', 'médico']
+        }
+        
+        for category, words in keywords.items():
+            if any(word in text.lower() for word in words):
+                return category
+        return 'outros'
+
+# Exemplo de uso
+if __name__ == "__main__":
+    cleaner = DataCleaner("data/raw/news_data.csv")
+    cleaned_data = cleaner.clean_data()
