@@ -1,0 +1,70 @@
+# scripts/collectors/news_scraper.py
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import time
+from urllib.parse import urljoin
+
+class NewsScraper:
+    def __init__(self, base_url, output_file="data/raw/news_data.csv"):
+        self.base_url = base_url
+        self.output_file = output_file
+        self.data = []
+        
+    def scrape_news(self, pages=5):
+        for page in range(1, pages+1):
+            url = f"{self.base_url}/page/{page}"
+            try:
+                response = requests.get(url)
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                articles = soup.find_all('article')
+                for article in articles:
+                    title = article.find('h2').get_text(strip=True)
+                    link = article.find('a')['href']
+                    absolute_link = urljoin(self.base_url, link)
+                    date = article.find('time')['datetime'] if article.find('time') else None
+                    
+                    # Coleta dados adicionais da página do artigo
+                    article_data = self.scrape_article_details(absolute_link)
+                    
+                    self.data.append({
+                        'title': title,
+                        'link': absolute_link,
+                        'date': date,
+                        **article_data
+                    })
+                
+                time.sleep(2)  # Delay para evitar bloqueio
+                
+            except Exception as e:
+                print(f"Erro ao acessar página {page}: {e}")
+        
+        self.save_data()
+    
+    def scrape_article_details(self, url):
+        try:
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            author = soup.find('span', class_='author').get_text(strip=True) if soup.find('span', class_='author') else None
+            content = ' '.join([p.get_text(strip=True) for p in soup.find_all('p')])
+            
+            return {
+                'author': author,
+                'content': content[:500] + '...'  # Limita o conteúdo
+            }
+            
+        except Exception as e:
+            print(f"Erro ao coletar detalhes do artigo {url}: {e}")
+            return {}
+    
+    def save_data(self):
+        df = pd.DataFrame(self.data)
+        df.to_csv(self.output_file, index=False)
+        print(f"Dados salvos em {self.output_file}")
+
+# Exemplo de uso
+if __name__ == "__main__":
+    scraper = NewsScraper("https://exemplo.com/noticias")
+    scraper.scrape_news(pages=3)
