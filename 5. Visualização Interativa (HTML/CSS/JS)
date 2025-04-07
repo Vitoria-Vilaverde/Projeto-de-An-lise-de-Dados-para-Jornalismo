@@ -1,0 +1,50 @@
+<!-- web/templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Análise de Notícias</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Análise de Conteúdo Jornalístico</h1>
+            <p class="subtitle">Dados coletados entre <span id="date-range"></span></p>
+        </header>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Publicações por Mês</h2>
+                <canvas id="temporalChart"></canvas>
+            </div>
+            
+            <div class="card">
+                <h2>Distribuição por Categoria</h2>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            
+            <div class="card wide">
+                <h2>Nuvem de Palavras</h2>
+                <div id="wordcloud"></div>
+            </div>
+            
+            <div class="card">
+                <h2>Autores Mais Produtivos</h2>
+                <canvas id="authorsChart"></canvas>
+            </div>
+            
+            <div class="card wide">
+                <h2>Mapa de Menções</h2>
+                <div id="map" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
