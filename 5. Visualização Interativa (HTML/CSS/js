@@ -1,0 +1,115 @@
+// web/js/dashboard.js
+document.addEventListener('DOMContentLoaded', function() {
+    // Simulação de dados - na prática, você carregaria de um arquivo JSON ou API
+    const data = {
+        temporal: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+            values: [45, 60, 52, 78, 65, 90]
+        },
+        categories: {
+            labels: ['Política', 'Economia', 'Saúde', 'Outros'],
+            values: [120, 85, 65, 30]
+        },
+        authors: {
+            labels: ['Autor A', 'Autor B', 'Autor C', 'Autor D', 'Autor E'],
+            values: [45, 32, 28, 25, 20]
+        },
+        wordcloud: ['governo', 'economia', 'política', 'crise', 'pandemia', 'vacina', 'dólar', 'inflação']
+    };
+    
+    // Configura a data no cabeçalho
+    document.getElementById('date-range').textContent = 'Janeiro a Junho de 2023';
+    
+    // Gráfico temporal
+    const temporalCtx = document.getElementById('temporalChart').getContext('2d');
+    new Chart(temporalCtx, {
+        type: 'bar',
+        data: {
+            labels: data.temporal.labels,
+            datasets: [{
+                label: 'Publicações',
+                data: data.temporal.values,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Gráfico de categorias
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: data.categories.labels,
+            datasets: [{
+                data: data.categories.values,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
+                ]
+            }]
+        }
+    });
+    
+    // Gráfico de autores
+    const authorsCtx = document.getElementById('authorsChart').getContext('2d');
+    new Chart(authorsCtx, {
+        type: 'horizontalBar',
+        data: {
+            labels: data.authors.labels,
+            datasets: [{
+                label: 'Artigos',
+                data: data.authors.values,
+                backgroundColor: 'rgba(75, 192, 192, 0.7)'
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Mapa Leaflet (exemplo)
+    const map = L.map('map').setView([-15.788, -47.879], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Adiciona alguns marcadores (dados fictícios)
+    L.marker([-23.550, -46.633]).addTo(map)
+        .bindPopup('São Paulo: 45 menções');
+        
+    L.marker([-22.906, -43.172]).addTo(map)
+        .bindPopup('Rio de Janeiro: 32 menções');
+        
+    L.marker([-15.794, -47.882]).addTo(map)
+        .bindPopup('Brasília: 58 menções');
+    
+    // Nuvem de palavras (simplificada)
+    const wordcloudEl = document.getElementById('wordcloud');
+    data.wordcloud.forEach(word => {
+        const size = Math.floor(Math.random() * 10) + 14;
+        const color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+        const span = document.createElement('span');
+        span.textContent = word;
+        span.style.fontSize = `${size}px`;
+        span.style.color = color;
+        span.style.margin = '5px';
+        span.style.display = 'inline-block';
+        wordcloudEl.appendChild(span);
+    });
+});
